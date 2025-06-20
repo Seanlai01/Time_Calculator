@@ -1,68 +1,127 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>跨日期時間轉分鐘換算器</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>時間轉分鐘小工具</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
       background-color: #b0c4de;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    input {
-      padding: 5px;
-      margin: 5px 0;
+
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
     }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    input[type="datetime-local"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
     button {
-      padding: 8px 16px;
-      margin-top: 10px;
+      width: 100%;
+      padding: 12px;
+      background-color: #003366;
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
+
+    button:hover {
+      background-color: #002244;
+    }
+
     #result {
       margin-top: 20px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      text-align: center;
       color: #003366;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 10px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>日期時間區間 ➜ 分鐘數</h2>
 
-  <h2>時間區間轉分鐘數小工具</h2>
+    <label for="startDateTime">開始時間</label>
+    <input type="datetime-local" id="startDateTime" />
 
-  <label>開始時間：<br>
-    <input type="datetime-local" id="startDateTime">
-  </label><br><br>
+    <label for="endDateTime">結束時間</label>
+    <input type="datetime-local" id="endDateTime" />
 
-  <label>結束時間：<br>
-    <input type="datetime-local" id="endDateTime">
-  </label><br><br>
+    <button onclick="calculateMinutes()">計算分鐘數</button>
 
-  <button onclick="calculateMinutes()">計算分鐘數</button>
-
-  <div id="result"></div>
+    <div id="result"></div>
+  </div>
 
   <script>
     function calculateMinutes() {
-      const start = document.getElementById('startDateTime').value;
-      const end = document.getElementById('endDateTime').value;
+      const start = document.getElementById("startDateTime").value;
+      const end = document.getElementById("endDateTime").value;
 
       if (!start || !end) {
-        document.getElementById('result').innerText = '請輸入完整日期與時間';
+        document.getElementById("result").innerText = "請輸入完整時間";
         return;
       }
 
       const startDate = new Date(start);
       const endDate = new Date(end);
-
-      let diffMs = endDate - startDate;
-      let diffMinutes = Math.floor(diffMs / 60000);
+      const diffMs = endDate - startDate;
+      const diffMinutes = Math.floor(diffMs / 60000);
 
       if (diffMinutes < 0) {
-        document.getElementById('result').innerText = '結束時間不能早於開始時間';
+        document.getElementById("result").innerText = "結束時間不能早於開始時間";
       } else {
-        document.getElementById('result').innerText = `總共 ${diffMinutes} 分鐘`;
+        document.getElementById("result").innerText = `總共 ${diffMinutes} 分鐘`;
       }
     }
   </script>
-
 </body>
 </html>
