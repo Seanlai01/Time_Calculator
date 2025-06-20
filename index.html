@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>跨日期時間轉分鐘換算器</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #b0c4de;
+    }
+    input {
+      padding: 5px;
+      margin: 5px 0;
+    }
+    button {
+      padding: 8px 16px;
+      margin-top: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #003366;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>時間區間轉分鐘數小工具</h2>
+
+  <label>開始時間：<br>
+    <input type="datetime-local" id="startDateTime">
+  </label><br><br>
+
+  <label>結束時間：<br>
+    <input type="datetime-local" id="endDateTime">
+  </label><br><br>
+
+  <button onclick="calculateMinutes()">計算分鐘數</button>
+
+  <div id="result"></div>
+
+  <script>
+    function calculateMinutes() {
+      const start = document.getElementById('startDateTime').value;
+      const end = document.getElementById('endDateTime').value;
+
+      if (!start || !end) {
+        document.getElementById('result').innerText = '請輸入完整日期與時間';
+        return;
+      }
+
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      let diffMs = endDate - startDate;
+      let diffMinutes = Math.floor(diffMs / 60000);
+
+      if (diffMinutes < 0) {
+        document.getElementById('result').innerText = '結束時間不能早於開始時間';
+      } else {
+        document.getElementById('result').innerText = `總共 ${diffMinutes} 分鐘`;
+      }
+    }
+  </script>
+
+</body>
+</html>
