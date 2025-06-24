@@ -5,61 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>時間轉分鐘小工具</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: sans-serif;
       margin: 0;
-      padding: 0;
-      height: 100vh;
+      font-family: sans-serif;
       background-color: #b0c4de;
     }
 
-    .app {
-      display: flex;
-      height: 100vh;
-    }
-
+    /* 側邊選單 */
     .sidebar {
-      width: 220px;
-      background-color: #fff;
-      border-right: 1px solid #ccc;
-      padding: 20px;
-      box-sizing: border-box;
       position: fixed;
-      left: -220px;
       top: 0;
-      height: 100%;
-      transition: left 0.3s;
-      z-index: 1000;
-    }
-
-    .sidebar.open {
       left: 0;
+      width: 220px;
+      height: 100vh;
+      background-color: #fff;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 10;
+    }
+    .sidebar.open {
+      transform: translateX(0);
     }
 
+    .sidebar h2 {
+      font-size: 1.2rem;
+      margin-top: 0;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar li {
+      margin: 10px 0;
+      font-size: 0.95rem;
+    }
+
+    .sidebar li::before {
+      content: '🕒 ';
+    }
+
+    .sidebar li:nth-child(2)::before {
+      content: '🖊 ';
+    }
+
+    /* 漢堡按鈕 */
     .menu-toggle {
       position: fixed;
-      top: 20px;
-      left: 20px;
-      background-color: #fff;
-      border: none;
+      top: 10px;
+      left: 10px;
       font-size: 1.5rem;
-      z-index: 1100;
-      cursor: pointer;
+      background: #fff;
+      border: none;
+      padding: 8px 12px;
       border-radius: 6px;
-      padding: 5px 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      z-index: 20;
+      cursor: pointer;
     }
 
-    .main-content {
-      flex: 1;
-      padding: 30px;
+    /* 主內容容器 */
+    .app-wrapper {
       margin-left: 0;
-      transition: margin-left 0.3s;
-      width: 100%;
-      box-sizing: border-box;
+      transition: margin-left 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 60px 20px 20px;
     }
 
-    .sidebar.open ~ .main-content {
+    .app-wrapper.open {
       margin-left: 220px;
     }
 
@@ -68,19 +90,18 @@
       padding: 30px 40px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
       max-width: 400px;
-      margin: 0 auto;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
     }
 
     label {
       display: block;
-      margin-bottom: 12px;
+      margin-top: 16px;
       font-weight: bold;
       font-size: 0.95rem;
     }
@@ -88,13 +109,14 @@
     input[type="datetime-local"] {
       width: 100%;
       padding: 10px;
-      margin-bottom: 16px;
       font-size: 1rem;
+      margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
 
-    button {
+    button.calculate {
+      margin-top: 20px;
       width: 100%;
       padding: 12px;
       background-color: #003366;
@@ -105,7 +127,7 @@
       cursor: pointer;
     }
 
-    button:hover {
+    button.calculate:hover {
       background-color: #002244;
     }
 
@@ -120,12 +142,10 @@
       .container {
         padding: 20px;
       }
-
       h2 {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
       }
-
-      button {
+      button.calculate {
         font-size: 0.95rem;
         padding: 10px;
       }
@@ -133,37 +153,39 @@
   </style>
 </head>
 <body>
-  <div class="app">
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+  <!-- 漢堡按鈕 -->
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
-    <div class="sidebar" id="sidebar">
-      <h3>📋 選單</h3>
-      <ul>
-        <li>🕒 分鐘計算</li>
-        <li>🧪 其他功能（待擴充）</li>
-      </ul>
-    </div>
+  <!-- 側邊選單 -->
+  <nav class="sidebar" id="sidebar">
+    <h2>小工具選單</h2>
+    <ul>
+      <li>分鐘計算</li>
+      <li>其他功能（待擴充）</li>
+    </ul>
+  </nav>
 
-    <div class="main-content">
-      <div class="container">
-        <h2>日期時間區間 ➜ 分鐘數</h2>
+  <!-- 主畫面 -->
+  <div class="app-wrapper" id="appWrapper">
+    <div class="container">
+      <h2>日期時間區間 ➜ 分鐘數</h2>
 
-        <label for="startDateTime">開始時間</label>
-        <input type="datetime-local" id="startDateTime" />
+      <label for="startDateTime">開始時間</label>
+      <input type="datetime-local" id="startDateTime" />
 
-        <label for="endDateTime">結束時間</label>
-        <input type="datetime-local" id="endDateTime" />
+      <label for="endDateTime">結束時間</label>
+      <input type="datetime-local" id="endDateTime" />
 
-        <button onclick="calculateMinutes()">計算分鐘數</button>
+      <button class="calculate" onclick="calculateMinutes()">計算分鐘數</button>
 
-        <div id="result"></div>
-      </div>
+      <div id="result"></div>
     </div>
   </div>
 
   <script>
     function toggleMenu() {
       document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("appWrapper").classList.toggle("open");
     }
 
     function calculateMinutes() {
