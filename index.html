@@ -3,69 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>多功能小工具</title>
+  <title>時間轉分鐘小工具</title>
   <style>
     body {
-      margin: 0;
       font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
       background-color: #b0c4de;
     }
 
-    .hamburger {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 1000;
-      background: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    .app {
+      display: flex;
+      height: 100vh;
     }
 
     .sidebar {
-      position: fixed;
-      top: 0;
-      left: -220px;
-      width: 200px;
-      height: 100%;
+      width: 220px;
       background-color: #fff;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-      transition: left 0.3s;
+      border-right: 1px solid #ccc;
       padding: 20px;
-      z-index: 999;
+      box-sizing: border-box;
+      position: fixed;
+      left: -220px;
+      top: 0;
+      height: 100%;
+      transition: left 0.3s;
+      z-index: 1000;
     }
 
-    .sidebar.show {
+    .sidebar.open {
       left: 0;
     }
 
-    .sidebar h3 {
-      margin-top: 0;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .sidebar li {
-      margin: 10px 0;
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      z-index: 1100;
       cursor: pointer;
+      border-radius: 6px;
+      padding: 5px 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    .tool-section {
-      display: none;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      margin-left: 0;
+      transition: margin-left 0.3s;
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    .tool-section.active {
-      display: flex;
+    .sidebar.open ~ .main-content {
+      margin-left: 220px;
     }
 
     .container {
@@ -73,9 +68,8 @@
       padding: 30px 40px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      width: 100%;
       max-width: 400px;
-      box-sizing: border-box;
+      margin: 0 auto;
     }
 
     h2 {
@@ -139,52 +133,37 @@
   </style>
 </head>
 <body>
-  <div class="hamburger" onclick="toggleSidebar()">☰</div>
+  <div class="app">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
-  <div class="sidebar" id="sidebar">
-    <h3>工具選單</h3>
-    <ul>
-      <li onclick="showTool('minuteCalc')">🕓 分鐘計算</li>
-      <li onclick="showTool('futureTool')">📅 其他功能（待擴充）</li>
-    </ul>
-  </div>
-
-  <!-- 工具1：分鐘換算 -->
-  <div class="tool-section active" id="minuteCalc">
-    <div class="container">
-      <h2>日期時間區間 ➜ 分鐘數</h2>
-
-      <label for="startDateTime">開始時間</label>
-      <input type="datetime-local" id="startDateTime" />
-
-      <label for="endDateTime">結束時間</label>
-      <input type="datetime-local" id="endDateTime" />
-
-      <button onclick="calculateMinutes()">計算分鐘數</button>
-
-      <div id="result"></div>
+    <div class="sidebar" id="sidebar">
+      <h3>📋 選單</h3>
+      <ul>
+        <li>🕒 分鐘計算</li>
+        <li>🧪 其他功能（待擴充）</li>
+      </ul>
     </div>
-  </div>
 
-  <!-- 工具2：保留未來功能 -->
-  <div class="tool-section" id="futureTool">
-    <div class="container">
-      <h2>敬請期待</h2>
-      <p style="text-align: center;">這裡將新增更多實用小工具</p>
+    <div class="main-content">
+      <div class="container">
+        <h2>日期時間區間 ➜ 分鐘數</h2>
+
+        <label for="startDateTime">開始時間</label>
+        <input type="datetime-local" id="startDateTime" />
+
+        <label for="endDateTime">結束時間</label>
+        <input type="datetime-local" id="endDateTime" />
+
+        <button onclick="calculateMinutes()">計算分鐘數</button>
+
+        <div id="result"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('show');
-    }
-
-    function showTool(toolId) {
-      document.querySelectorAll('.tool-section').forEach(div => {
-        div.classList.remove('active');
-      });
-      document.getElementById(toolId).classList.add('active');
-      toggleSidebar();
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("open");
     }
 
     function calculateMinutes() {
