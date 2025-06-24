@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>時間轉分鐘小工具</title>
+  <title>小工具集合</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: sans-serif;
       margin: 0;
@@ -12,45 +16,50 @@
       background-color: #b0c4de;
     }
 
-    /* ============ 漢堡與側邊欄 ============ */
-    .topbar {
-      background-color: #002244;
+    .navbar {
+      background-color: #002b52;
       color: white;
-      padding: 10px 20px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      padding: 0.5rem 1rem;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
     }
 
     .hamburger {
-      font-size: 24px;
-      background: none;
-      border: none;
-      color: white;
+      font-size: 1.5rem;
       cursor: pointer;
-      margin-right: 10px;
+    }
+
+    .app-title {
+      white-space: nowrap;
+      margin-left: auto;
     }
 
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
+      height: 100vh;
       width: 220px;
-      height: 100%;
-      background-color: white;
+      background-color: #fff;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      z-index: 1000;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-      padding: 20px;
+      transition: transform 0.3s ease-in-out;
+      padding: 60px 15px 15px;
+      z-index: 999;
     }
 
-    .sidebar.open {
+    .sidebar.active {
       transform: translateX(0);
     }
 
-    .sidebar h3 {
-      margin-top: 0;
-      font-size: 18px;
+    .sidebar h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
     }
 
     .sidebar ul {
@@ -58,152 +67,122 @@
       padding: 0;
     }
 
-    .sidebar li {
-      margin: 10px 0;
+    .sidebar ul li {
+      padding: 10px 0;
+      cursor: pointer;
     }
 
-    .sidebar li i {
-      margin-right: 6px;
-    }
-
-    /* 遮罩 */
-    .backdrop {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.2);
-      z-index: 999;
-    }
-
-    .backdrop.show {
-      display: block;
-    }
-
-    /* ============ 主內容 ============ */
-    .app-wrapper {
+    .content {
+      margin-top: 60px;
+      padding: 2rem;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 30px;
-      min-height: calc(100vh - 50px);
+      min-height: calc(100vh - 60px);
     }
 
-    .container {
+    .card {
       background: #fff;
-      padding: 30px 40px;
+      padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      width: 100%;
       max-width: 400px;
-      box-sizing: border-box;
+      width: 100%;
     }
 
     h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
       text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
     }
 
     label {
-      display: block;
-      margin-bottom: 12px;
       font-weight: bold;
-      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 0.5rem;
     }
 
     input[type="datetime-local"] {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 16px;
-      font-size: 1rem;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
 
-    button.calculate-btn {
+    button {
       width: 100%;
-      padding: 12px;
+      padding: 0.75rem;
       background-color: #003366;
       color: white;
-      font-size: 1rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
     }
 
-    button.calculate-btn:hover {
-      background-color: #002244;
+    button:hover {
+      background-color: #001f3f;
     }
 
     #result {
-      margin-top: 20px;
-      font-size: 1.1rem;
       text-align: center;
+      margin-top: 1rem;
       color: #003366;
     }
 
-    /* 手機響應式 */
     @media (max-width: 500px) {
-      .container {
-        padding: 20px;
+      .card {
+        padding: 1rem;
       }
-
       h2 {
-        font-size: 1.25rem;
-      }
-
-      button.calculate-btn {
-        font-size: 0.95rem;
-        padding: 10px;
+        font-size: 1rem;
       }
     }
   </style>
 </head>
 <body>
+  <div class="navbar">
+    <div class="hamburger" onclick="toggleSidebar()">☰</div>
+    <div class="app-title" id="currentToolTitle">分鐘計算</div>
+  </div>
 
-  <!-- 背景遮罩 -->
-  <div id="backdrop" class="backdrop" onclick="toggleSidebar()"></div>
-
-  <!-- 側邊選單 -->
-  <div id="sidebar" class="sidebar">
-    <h3>小工具選單</h3>
+  <div class="sidebar" id="sidebar">
+    <h2>小工具選單</h2>
     <ul>
-      <li><i>🕒</i> 分鐘計算</li>
-      <li><i>🖋️</i> 其他功能（待擴充）</li>
+      <li onclick="switchTool('time')">🕒 分鐘計算</li>
+      <li onclick="switchTool('about')">✏️ 其他功能（待擴充）</li>
     </ul>
   </div>
 
-  <!-- 上方導覽列 -->
-  <div class="topbar">
-    <button class="hamburger" onclick="toggleSidebar()">☰</button>
-    <span>時間轉分鐘小工具</span>
-  </div>
-
-  <!-- 主內容 -->
-  <div class="app-wrapper">
-    <div class="container">
+  <div class="content">
+    <div class="card" id="timeTool">
       <h2>日期時間區間 ➜ 分鐘數</h2>
-
       <label for="startDateTime">開始時間</label>
       <input type="datetime-local" id="startDateTime" />
 
       <label for="endDateTime">結束時間</label>
       <input type="datetime-local" id="endDateTime" />
 
-      <button class="calculate-btn" onclick="calculateMinutes()">計算分鐘數</button>
-
+      <button onclick="calculateMinutes()">計算分鐘數</button>
       <div id="result"></div>
+    </div>
+
+    <div class="card" id="aboutTool" style="display:none">
+      <h2>關於本工具</h2>
+      <p>這是一個簡單的小工具集合，提供時間轉換等功能。</p>
     </div>
   </div>
 
   <script>
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('backdrop');
-      sidebar.classList.toggle('open');
-      backdrop.classList.toggle('show');
+      document.getElementById("sidebar").classList.toggle("active");
+    }
+
+    function switchTool(tool) {
+      document.getElementById("sidebar").classList.remove("active");
+      document.getElementById("timeTool").style.display = tool === 'time' ? 'block' : 'none';
+      document.getElementById("aboutTool").style.display = tool === 'about' ? 'block' : 'none';
+      document.getElementById("currentToolTitle").innerText = tool === 'time' ? '分鐘計算' : '其他功能';
     }
 
     function calculateMinutes() {
