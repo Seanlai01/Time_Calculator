@@ -7,16 +7,12 @@
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.6/dist/umd/full.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       font-family: sans-serif;
       margin: 0;
       background-color: #b0c4de;
     }
-
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -25,25 +21,14 @@
       color: white;
       padding: 10px 16px;
     }
-
     .nav-left, .nav-center, .nav-right {
       flex: 1;
       display: flex;
       align-items: center;
     }
-
-    .nav-left {
-      justify-content: flex-start;
-    }
-
-    .nav-center {
-      justify-content: center;
-    }
-
-    .nav-right {
-      justify-content: flex-end;
-    }
-
+    .nav-left { justify-content: flex-start; }
+    .nav-center { justify-content: center; }
+    .nav-right { justify-content: flex-end; }
     .menu-toggle {
       font-size: 1.5rem;
       background: none;
@@ -51,12 +36,10 @@
       color: white;
       cursor: pointer;
     }
-
     .tool-name {
       font-weight: bold;
       font-size: 1.1rem;
     }
-
     .sidebar {
       position: fixed;
       top: 0;
@@ -70,25 +53,13 @@
       transition: transform 0.3s ease;
       z-index: 1000;
     }
-
-    .sidebar.open {
-      transform: translateX(0);
-    }
-
-    .sidebar h3 {
-      margin-top: 0;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-
+    .sidebar.open { transform: translateX(0); }
+    .sidebar h3 { margin-top: 0; }
+    .sidebar ul { list-style: none; padding: 0; }
     .sidebar ul li {
       margin: 12px 0;
       cursor: pointer;
     }
-
     .main {
       display: flex;
       justify-content: center;
@@ -96,7 +67,6 @@
       min-height: calc(100vh - 60px);
       padding: 20px;
     }
-
     .card {
       background: #fff;
       padding: 30px;
@@ -105,12 +75,10 @@
       max-width: 500px;
       width: 100%;
     }
-
     h2 {
       text-align: center;
       font-weight: bold;
     }
-
     input,
     textarea {
       width: 100%;
@@ -120,7 +88,6 @@
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-
     button {
       width: 100%;
       padding: 12px;
@@ -132,17 +99,25 @@
       cursor: pointer;
       transition: transform 0.2s ease, background-color 0.3s;
     }
-
     button:hover {
       background-color: #005599;
       transform: scale(1.02);
     }
-
-    #result {
+    #result, #zhResult {
       margin-top: 16px;
       text-align: center;
+      white-space: pre-wrap;
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 10px;
+      min-height: 50px;
     }
-
+    .error {
+      margin-top: 8px;
+      color: red;
+      font-size: 0.9rem;
+      text-align: center;
+    }
     #barcodeContainer {
       margin-top: 20px;
       width: 100%;
@@ -150,7 +125,6 @@
       display: flex;
       justify-content: center;
     }
-
     #barcode {
       max-width: 100%;
       height: auto;
@@ -172,7 +146,7 @@
     <h3>小工具選單</h3>
     <ul>
       <li onclick="switchTool('calculator')">⏱ 分鐘計算</li>
-      <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換</li>
+      <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換(壞了待修)</li>
       <li onclick="switchTool('barcodegen')">📦 條碼產生器</li>
     </ul>
   </div>
@@ -195,7 +169,8 @@
       <textarea id="zhInput" rows="5" placeholder="輸入文字..."></textarea>
       <button onclick="convertText('tify')">轉為繁體</button>
       <button onclick="convertText('sify')" style="margin-top: 8px;">轉為簡體</button>
-      <div id="zhResult" style="margin-top: 12px;"></div>
+      <div id="zhResult"></div>
+      <div id="errorMsg" class="error"></div>
     </div>
 
     <!-- 條碼生成 -->
@@ -218,7 +193,6 @@
       document.getElementById('calculator').style.display = tool === 'calculator' ? 'block' : 'none';
       document.getElementById('zhconvert').style.display = tool === 'zhconvert' ? 'block' : 'none';
       document.getElementById('barcodegen').style.display = tool === 'barcodegen' ? 'block' : 'none';
-
       const names = {
         calculator: '分鐘計算',
         zhconvert: '簡繁轉換',
@@ -231,41 +205,53 @@
     function calculateMinutes() {
       const start = document.getElementById("startDateTime").value;
       const end = document.getElementById("endDateTime").value;
-
       if (!start || !end) {
         document.getElementById("result").innerText = "請輸入完整時間";
         return;
       }
-
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-      const diffMs = endDate - startDate;
-      const diffMinutes = Math.floor(diffMs / 60000);
-
+      const diffMinutes = Math.floor((new Date(end) - new Date(start)) / 60000);
       document.getElementById("result").innerText =
         diffMinutes < 0 ? "結束時間不能早於開始時間" : `總共 ${diffMinutes} 分鐘`;
     }
 
+    function applyCustomDict(text) {
+      const dict = [
+        ['供应商', '供應商'], ['系统', '系統'], ['文件', '檔案'],
+        ['谢谢', '謝謝'], ['电脑', '電腦'], ['顯示', '顯示'],
+        ['請', '請'], ['幫忙', '幫忙'], ['處理', '處理'],
+        ['廣州', '廣州'], ['塑膠', '塑膠'], ['異常', '異常'],
+        ['權限', '權限'], ['MES', 'MES'], ['IQC', 'IQC']
+      ];
+      return dict.reduce((acc, [s, t]) => acc.replaceAll(s, t), text);
+    }
+
     async function convertText(type) {
-      const inputText = document.getElementById('zhInput').value;
+      const input = document.getElementById("zhInput").value.trim();
+      const resultDiv = document.getElementById("zhResult");
+      const errorDiv = document.getElementById("errorMsg");
+      resultDiv.innerText = '';
+      errorDiv.innerText = '';
+
+      if (!input) {
+        errorDiv.innerText = '請先輸入文字再進行轉換。';
+        return;
+      }
 
       try {
-        const converter = await OpenCC.Converter({
-          from: type === 'tify' ? 'cn' : 'tw',
-          to: type === 'tify' ? 'tw' : 'cn',
-        });
-
-        const output = await converter(inputText);
-        document.getElementById('zhResult').innerText = output;
+        const configName = type === 'tify' ? 's2t.json' : 't2s.json';
+        const converter = new OpenCC(configName);
+        let result = await converter.convertPromise(input);
+        if (type === 'tify') result = applyCustomDict(result);
+        resultDiv.innerText = result;
       } catch (err) {
-        document.getElementById('zhResult').innerText = '轉換錯誤：' + err;
+        console.error('OpenCC 錯誤：', err);
+        errorDiv.innerText = '轉換失敗，請稍後再試。';
       }
     }
 
     function generateBarcode() {
       const input = document.getElementById("barcodeInput").value.trim();
       if (!input) return alert("請輸入條碼內容");
-
       JsBarcode("#barcode", input, {
         format: "CODE128",
         lineColor: "#000",
