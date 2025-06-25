@@ -12,54 +12,52 @@
     body {
       font-family: sans-serif;
       margin: 0;
-      padding: 0;
       background-color: #b0c4de;
     }
 
     .navbar {
-      background-color: #002b52;
-      color: white;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 1rem;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 1000;
+      justify-content: flex-start;
+      background-color: #002b50;
+      color: white;
+      padding: 10px 0 10px 16px; /* ✅ 靠左 */
     }
 
-    .hamburger {
+    .menu-toggle {
       font-size: 1.5rem;
+      background: none;
+      border: none;
+      color: white;
       cursor: pointer;
+      margin-right: 12px;
     }
 
-    .app-title {
+    .tool-name {
+      font-weight: bold;
       white-space: nowrap;
-      margin-left: auto;
     }
 
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
-      height: 100vh;
       width: 220px;
+      height: 100%;
       background-color: #fff;
       box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
       transform: translateX(-100%);
-      transition: transform 0.3s ease-in-out;
-      padding: 60px 15px 15px;
-      z-index: 999;
+      transition: transform 0.3s ease;
+      z-index: 1000;
     }
 
-    .sidebar.active {
+    .sidebar.open {
       transform: translateX(0);
     }
 
-    .sidebar h2 {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
+    .sidebar h3 {
+      margin-top: 0;
     }
 
     .sidebar ul {
@@ -68,121 +66,98 @@
     }
 
     .sidebar ul li {
-      padding: 10px 0;
+      margin: 12px 0;
       cursor: pointer;
     }
 
-    .content {
-      margin-top: 60px;
-      padding: 2rem;
+    .main {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: calc(100vh - 60px);
+      padding: 20px;
     }
 
     .card {
       background: #fff;
-      padding: 2rem;
+      padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       max-width: 400px;
       width: 100%;
     }
 
-    h2 {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    input[type="datetime-local"] {
+    input,
+    textarea {
       width: 100%;
-      padding: 0.5rem;
-      margin-bottom: 1rem;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
 
     button {
       width: 100%;
-      padding: 0.75rem;
+      padding: 12px;
       background-color: #003366;
       color: white;
+      font-size: 1rem;
       border: none;
       border-radius: 6px;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #001f3f;
-    }
-
     #result {
+      margin-top: 16px;
       text-align: center;
-      margin-top: 1rem;
-      color: #003366;
-    }
-
-    @media (max-width: 500px) {
-      .card {
-        padding: 1rem;
-      }
-      h2 {
-        font-size: 1rem;
-      }
     }
   </style>
 </head>
 <body>
   <div class="navbar">
-    <div class="hamburger" onclick="toggleSidebar()">☰</div>
-    <div class="app-title" id="currentToolTitle">分鐘計算</div>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="tool-name" id="currentToolName">分鐘計算</div>
   </div>
 
   <div class="sidebar" id="sidebar">
-    <h2>小工具選單</h2>
+    <h3>小工具選單</h3>
     <ul>
-      <li onclick="switchTool('time')">🕒 分鐘計算</li>
-      <li onclick="switchTool('about')">✏️ 其他功能（待擴充）</li>
+      <li onclick="switchTool('calculator')">⏱ 分鐘計算</li>
+      <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換</li>
     </ul>
   </div>
 
-  <div class="content">
-    <div class="card" id="timeTool">
-      <h2>日期時間區間 ➜ 分鐘數</h2>
+  <div class="main">
+    <div class="card" id="calculator">
+      <h2>日期時間區間 ➔ 分鐘數</h2>
       <label for="startDateTime">開始時間</label>
       <input type="datetime-local" id="startDateTime" />
-
       <label for="endDateTime">結束時間</label>
       <input type="datetime-local" id="endDateTime" />
-
       <button onclick="calculateMinutes()">計算分鐘數</button>
       <div id="result"></div>
     </div>
 
-    <div class="card" id="aboutTool" style="display:none">
-      <h2>關於本工具</h2>
-      <p>這是一個簡單的小工具集合，提供時間轉換等功能。</p>
+    <div class="card" id="zhconvert" style="display:none">
+      <h2>簡體 ⇄ 繁體 轉換</h2>
+      <textarea id="zhInput" rows="5" placeholder="輸入文字..."></textarea>
+      <button onclick="convertText('toTraditional')">轉為繁體</button>
+      <button onclick="convertText('toSimplified')" style="margin-top: 8px;">轉為簡體</button>
+      <div id="zhResult" style="margin-top: 12px;"></div>
     </div>
   </div>
 
   <script>
     function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("active");
+      document.getElementById('sidebar').classList.toggle('open');
     }
 
     function switchTool(tool) {
-      document.getElementById("sidebar").classList.remove("active");
-      document.getElementById("timeTool").style.display = tool === 'time' ? 'block' : 'none';
-      document.getElementById("aboutTool").style.display = tool === 'about' ? 'block' : 'none';
-      document.getElementById("currentToolTitle").innerText = tool === 'time' ? '分鐘計算' : '其他功能';
+      document.getElementById('calculator').style.display = tool === 'calculator' ? 'block' : 'none';
+      document.getElementById('zhconvert').style.display = tool === 'zhconvert' ? 'block' : 'none';
+      document.getElementById('currentToolName').innerText = tool === 'calculator' ? '分鐘計算' : '簡繁轉換';
+      document.getElementById('sidebar').classList.remove('open');
     }
 
     function calculateMinutes() {
@@ -199,11 +174,28 @@
       const diffMs = endDate - startDate;
       const diffMinutes = Math.floor(diffMs / 60000);
 
-      if (diffMinutes < 0) {
-        document.getElementById("result").innerText = "結束時間不能早於開始時間";
+      document.getElementById("result").innerText =
+        diffMinutes < 0 ? "結束時間不能早於開始時間" : `總共 ${diffMinutes} 分鐘`;
+    }
+
+    const zhDict = {
+      "个": "個", "体": "體", "后": "後", "发": "發", "为": "為", "国": "國",
+      "动": "動", "风": "風", "简": "簡", "繁": "繁", "马": "馬", "这": "這", "进": "進",
+      "吗": "嗎", "扩": "擴", "护": "護", "号": "號", "报": "報", "长": "長", "门": "門"
+    };
+
+    function convertText(type) {
+      let text = document.getElementById('zhInput').value;
+      if (type === 'toTraditional') {
+        for (const [simp, trad] of Object.entries(zhDict)) {
+          text = text.replace(new RegExp(simp, 'g'), trad);
+        }
       } else {
-        document.getElementById("result").innerText = `總共 ${diffMinutes} 分鐘`;
+        for (const [simp, trad] of Object.entries(zhDict)) {
+          text = text.replace(new RegExp(trad, 'g'), simp);
+        }
       }
+      document.getElementById('zhResult').innerText = text;
     }
   </script>
 </body>
