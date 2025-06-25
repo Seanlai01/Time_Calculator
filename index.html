@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>小工具集合</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.6/dist/umd/full.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.6/browser.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -74,6 +74,7 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       max-width: 500px;
       width: 100%;
+      position: relative;
     }
     h2 {
       text-align: center;
@@ -103,6 +104,18 @@
       background-color: #005599;
       transform: scale(1.02);
     }
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background-color: transparent;
+      color: black;
+      border: none;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10;
+    }
     #result, #zhResult {
       margin-top: 16px;
       text-align: center;
@@ -129,6 +142,13 @@
       max-width: 100%;
       height: auto;
     }
+    #homeImage {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -137,7 +157,7 @@
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
     <div class="nav-center">
-      <div class="tool-name" id="currentToolName">分鐘計算</div>
+      <div class="tool-name" id="currentToolName">首頁</div>
     </div>
     <div class="nav-right"></div>
   </div>
@@ -146,14 +166,18 @@
     <h3>小工具選單</h3>
     <ul>
       <li onclick="switchTool('calculator')">⏱ 分鐘計算</li>
-      <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換(壞了待修)</li>
+      <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換</li>
       <li onclick="switchTool('barcodegen')">📦 條碼產生器</li>
     </ul>
   </div>
 
   <div class="main">
-    <!-- 分鐘計算 -->
-    <div class="card" id="calculator">
+    <div class="card" id="home">
+      <img id="homeImage" src="homepage.jpg" alt="首頁圖片">
+    </div>
+
+    <div class="card" id="calculator" style="display:none">
+      <button class="close-btn" onclick="backHome()">×</button>
       <h2>日期時間 ➜ 分鐘數</h2>
       <label for="startDateTime">開始時間</label>
       <input type="datetime-local" id="startDateTime" />
@@ -163,8 +187,8 @@
       <div id="result"></div>
     </div>
 
-    <!-- 簡繁轉換 -->
     <div class="card" id="zhconvert" style="display:none">
+      <button class="close-btn" onclick="backHome()">×</button>
       <h2>簡體 ⇄ 繁體 轉換</h2>
       <textarea id="zhInput" rows="5" placeholder="輸入文字..."></textarea>
       <button onclick="convertText('tify')">轉為繁體</button>
@@ -173,8 +197,8 @@
       <div id="errorMsg" class="error"></div>
     </div>
 
-    <!-- 條碼生成 -->
     <div class="card" id="barcodegen" style="display:none">
+      <button class="close-btn" onclick="backHome()">×</button>
       <h2>條碼生成器 <span style="font-weight: 600">(Code128)</span></h2>
       <input type="text" id="barcodeInput" placeholder="請輸入條碼文字..." />
       <button onclick="generateBarcode()">產生條碼</button>
@@ -190,16 +214,21 @@
     }
 
     function switchTool(tool) {
-      document.getElementById('calculator').style.display = tool === 'calculator' ? 'block' : 'none';
-      document.getElementById('zhconvert').style.display = tool === 'zhconvert' ? 'block' : 'none';
-      document.getElementById('barcodegen').style.display = tool === 'barcodegen' ? 'block' : 'none';
+      ['home', 'calculator', 'zhconvert', 'barcodegen'].forEach(id => {
+        document.getElementById(id).style.display = id === tool ? 'block' : 'none';
+      });
       const names = {
+        home: '首頁',
         calculator: '分鐘計算',
         zhconvert: '簡繁轉換',
         barcodegen: '條碼產生器'
       };
       document.getElementById('currentToolName').innerText = names[tool] || '';
       document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function backHome() {
+      switchTool('home');
     }
 
     function calculateMinutes() {
@@ -238,11 +267,9 @@
       }
 
       try {
-        const configName = type === 'tify' ? 's2t.json' : 't2s.json';
-        const converter = new OpenCC(configName);
-        let result = await converter.convertPromise(input);
-        if (type === 'tify') result = applyCustomDict(result);
-        resultDiv.innerText = result;
+        const converter = OpenCC.Converter({ from: type === 'tify' ? 'cn' : 'tw', to: type === 'tify' ? 'tw' : 'cn' });
+        const result = await converter(input);
+        resultDiv.innerText = type === 'tify' ? applyCustomDict(result) : result;
       } catch (err) {
         console.error('OpenCC 錯誤：', err);
         errorDiv.innerText = '轉換失敗，請稍後再試。';
@@ -262,6 +289,9 @@
         margin: 0
       });
     }
+
+    // 初始化預設為首頁
+    window.onload = () => switchTool('home');
   </script>
 </body>
 </html>
