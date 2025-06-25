@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>小工具集合</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.6/dist/umd/full.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -17,11 +19,29 @@
 
     .navbar {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: flex-start;
       background-color: #002b50;
       color: white;
-      padding: 10px 0 10px 16px; /* ✅ 靠左 */
+      padding: 10px 16px;
+    }
+
+    .nav-left, .nav-center, .nav-right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-left {
+      justify-content: flex-start;
+    }
+
+    .nav-center {
+      justify-content: center;
+    }
+
+    .nav-right {
+      justify-content: flex-end;
     }
 
     .menu-toggle {
@@ -30,12 +50,11 @@
       border: none;
       color: white;
       cursor: pointer;
-      margin-right: 12px;
     }
 
     .tool-name {
       font-weight: bold;
-      white-space: nowrap;
+      font-size: 1.1rem;
     }
 
     .sidebar {
@@ -83,8 +102,13 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
+      max-width: 500px;
       width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: bold;
     }
 
     input,
@@ -106,18 +130,42 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #005599;
+      transform: scale(1.02);
     }
 
     #result {
       margin-top: 16px;
       text-align: center;
     }
+
+    #barcodeContainer {
+      margin-top: 20px;
+      width: 100%;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    #barcode {
+      max-width: 100%;
+      height: auto;
+    }
   </style>
 </head>
 <body>
   <div class="navbar">
-    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="tool-name" id="currentToolName">分鐘計算</div>
+    <div class="nav-left">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
+    <div class="nav-center">
+      <div class="tool-name" id="currentToolName">分鐘計算</div>
+    </div>
+    <div class="nav-right"></div>
   </div>
 
   <div class="sidebar" id="sidebar">
@@ -125,12 +173,14 @@
     <ul>
       <li onclick="switchTool('calculator')">⏱ 分鐘計算</li>
       <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換</li>
+      <li onclick="switchTool('barcodegen')">📦 條碼產生器</li>
     </ul>
   </div>
 
   <div class="main">
+    <!-- 分鐘計算 -->
     <div class="card" id="calculator">
-      <h2>日期時間區間 ➔ 分鐘數</h2>
+      <h2>日期時間 ➜ 分鐘數</h2>
       <label for="startDateTime">開始時間</label>
       <input type="datetime-local" id="startDateTime" />
       <label for="endDateTime">結束時間</label>
@@ -139,12 +189,23 @@
       <div id="result"></div>
     </div>
 
+    <!-- 簡繁轉換 -->
     <div class="card" id="zhconvert" style="display:none">
       <h2>簡體 ⇄ 繁體 轉換</h2>
       <textarea id="zhInput" rows="5" placeholder="輸入文字..."></textarea>
-      <button onclick="convertText('toTraditional')">轉為繁體</button>
-      <button onclick="convertText('toSimplified')" style="margin-top: 8px;">轉為簡體</button>
+      <button onclick="convertText('tify')">轉為繁體</button>
+      <button onclick="convertText('sify')" style="margin-top: 8px;">轉為簡體</button>
       <div id="zhResult" style="margin-top: 12px;"></div>
+    </div>
+
+    <!-- 條碼生成 -->
+    <div class="card" id="barcodegen" style="display:none">
+      <h2>條碼生成器 <span style="font-weight: 600">(Code128)</span></h2>
+      <input type="text" id="barcodeInput" placeholder="請輸入條碼文字..." />
+      <button onclick="generateBarcode()">產生條碼</button>
+      <div id="barcodeContainer">
+        <svg id="barcode"></svg>
+      </div>
     </div>
   </div>
 
@@ -156,7 +217,14 @@
     function switchTool(tool) {
       document.getElementById('calculator').style.display = tool === 'calculator' ? 'block' : 'none';
       document.getElementById('zhconvert').style.display = tool === 'zhconvert' ? 'block' : 'none';
-      document.getElementById('currentToolName').innerText = tool === 'calculator' ? '分鐘計算' : '簡繁轉換';
+      document.getElementById('barcodegen').style.display = tool === 'barcodegen' ? 'block' : 'none';
+
+      const names = {
+        calculator: '分鐘計算',
+        zhconvert: '簡繁轉換',
+        barcodegen: '條碼產生器'
+      };
+      document.getElementById('currentToolName').innerText = names[tool] || '';
       document.getElementById('sidebar').classList.remove('open');
     }
 
@@ -178,24 +246,35 @@
         diffMinutes < 0 ? "結束時間不能早於開始時間" : `總共 ${diffMinutes} 分鐘`;
     }
 
-    const zhDict = {
-      "个": "個", "体": "體", "后": "後", "发": "發", "为": "為", "国": "國",
-      "动": "動", "风": "風", "简": "簡", "繁": "繁", "马": "馬", "这": "這", "进": "進",
-      "吗": "嗎", "扩": "擴", "护": "護", "号": "號", "报": "報", "长": "長", "门": "門"
-    };
+    async function convertText(type) {
+      const inputText = document.getElementById('zhInput').value;
 
-    function convertText(type) {
-      let text = document.getElementById('zhInput').value;
-      if (type === 'toTraditional') {
-        for (const [simp, trad] of Object.entries(zhDict)) {
-          text = text.replace(new RegExp(simp, 'g'), trad);
-        }
-      } else {
-        for (const [simp, trad] of Object.entries(zhDict)) {
-          text = text.replace(new RegExp(trad, 'g'), simp);
-        }
+      try {
+        const converter = await OpenCC.Converter({
+          from: type === 'tify' ? 'cn' : 'tw',
+          to: type === 'tify' ? 'tw' : 'cn',
+        });
+
+        const output = await converter(inputText);
+        document.getElementById('zhResult').innerText = output;
+      } catch (err) {
+        document.getElementById('zhResult').innerText = '轉換錯誤：' + err;
       }
-      document.getElementById('zhResult').innerText = text;
+    }
+
+    function generateBarcode() {
+      const input = document.getElementById("barcodeInput").value.trim();
+      if (!input) return alert("請輸入條碼內容");
+
+      JsBarcode("#barcode", input, {
+        format: "CODE128",
+        lineColor: "#000",
+        width: 1.5,
+        height: 100,
+        displayValue: true,
+        fontSize: 16,
+        margin: 0
+      });
     }
   </script>
 </body>
