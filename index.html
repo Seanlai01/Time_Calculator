@@ -76,6 +76,14 @@
       width: 100%;
       position: relative;
     }
+    /* ✅ 移除首頁卡片樣式（白邊） */
+    #home.card {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
     h2 {
       text-align: center;
       font-weight: bold;
@@ -147,7 +155,7 @@
       height: auto;
       display: block;
       margin: 0 auto;
-      border-radius: 8px;
+      border-radius: 0; /* ✅ 移除圓角 */
     }
   </style>
 </head>
@@ -173,7 +181,7 @@
 
   <div class="main">
     <div class="card" id="home">
-      <img id="homeImage" src="homepage.jpg" alt="首頁圖片">
+      <img id="homeImage" src="homepage2.jpg" alt="首頁圖片">
     </div>
 
     <div class="card" id="calculator" style="display:none">
