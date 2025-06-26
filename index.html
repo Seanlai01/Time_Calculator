@@ -68,22 +68,20 @@
       padding: 20px;
     }
     .card {
+      position: relative;
       background: #fff;
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       max-width: 500px;
       width: 100%;
-      position: relative;
     }
-    /* ✅ 移除首頁卡片樣式（白邊） */
-    #home.card {
-      background: transparent;
-      box-shadow: none;
+    .home-card {
+      background: none;
       padding: 0;
+      box-shadow: none;
       border-radius: 0;
     }
-
     h2 {
       text-align: center;
       font-weight: bold;
@@ -124,6 +122,10 @@
       cursor: pointer;
       z-index: 10;
     }
+    .close-btn:hover {
+      background-color: transparent;
+      transform: none;
+    }
     #result, #zhResult {
       margin-top: 16px;
       text-align: center;
@@ -155,7 +157,7 @@
       height: auto;
       display: block;
       margin: 0 auto;
-      border-radius: 0; /* ✅ 移除圓角 */
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -180,7 +182,7 @@
   </div>
 
   <div class="main">
-    <div class="card" id="home">
+    <div class="home-card" id="home">
       <img id="homeImage" src="homepage2.jpg" alt="首頁圖片">
     </div>
 
@@ -298,7 +300,6 @@
       });
     }
 
-    // 初始化預設為首頁
     window.onload = () => switchTool('home');
   </script>
 </body>
