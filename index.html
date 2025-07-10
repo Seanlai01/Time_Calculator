@@ -13,6 +13,10 @@
       margin: 0;
       background-color: #b0c4de;
     }
+    .dark-mode body {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -20,6 +24,9 @@
       background-color: #002b50;
       color: white;
       padding: 10px 16px;
+    }
+    .dark-mode .navbar {
+      background-color: #111;
     }
     .nav-left, .nav-center, .nav-right {
       flex: 1;
@@ -39,6 +46,13 @@
     .tool-name {
       font-weight: bold;
       font-size: 1.1rem;
+    }
+    .toggle-theme-btn {
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
     }
     .sidebar {
       position: fixed;
@@ -60,6 +74,10 @@
       margin: 12px 0;
       cursor: pointer;
     }
+    .dark-mode .sidebar {
+      background-color: #2a2a2a;
+      color: white;
+    }
     .main {
       display: flex;
       justify-content: center;
@@ -73,21 +91,24 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
     }
-    .home-card {
+    .dark-mode .card {
+      background: #2a2a2a;
+      color: white;
+    }
+    #home.card {
       background: none;
-      padding: 0;
       box-shadow: none;
+      padding: 0;
       border-radius: 0;
     }
     h2 {
       text-align: center;
       font-weight: bold;
     }
-    input,
-    textarea {
+    textarea, input {
       width: 100%;
       padding: 10px;
       margin-bottom: 16px;
@@ -104,29 +125,8 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: transform 0.2s ease, background-color 0.3s;
     }
-    button:hover {
-      background-color: #005599;
-      transform: scale(1.02);
-    }
-    .close-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background-color: transparent;
-      color: black;
-      border: none;
-      font-size: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      z-index: 10;
-    }
-    .close-btn:hover {
-      background-color: transparent;
-      transform: none;
-    }
-    #result, #zhResult {
+    #xmlResult, #result, #zhResult {
       margin-top: 16px;
       text-align: center;
       white-space: pre-wrap;
@@ -141,23 +141,26 @@
       font-size: 0.9rem;
       text-align: center;
     }
-    #barcodeContainer {
-      margin-top: 20px;
-      width: 100%;
-      overflow-x: auto;
-      display: flex;
-      justify-content: center;
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background-color: transparent;
+      color: black;
+      border: none;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10;
     }
-    #barcode {
-      max-width: 100%;
-      height: auto;
+    .dark-mode .close-btn {
+      color: white;
     }
-    #homeImage {
+    .home-image {
       max-width: 100%;
-      height: auto;
+      max-height: 80vh;
       display: block;
       margin: 0 auto;
-      border-radius: 8px;
     }
   </style>
 </head>
@@ -167,140 +170,128 @@
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
     <div class="nav-center">
-      <div class="tool-name" id="currentToolName">首頁</div>
+      <div class="tool-name" id="currentToolName">小工具集合</div>
     </div>
-    <div class="nav-right"></div>
+    <div class="nav-right">
+      <button class="toggle-theme-btn" onclick="toggleTheme()">🌓</button>
+    </div>
   </div>
 
   <div class="sidebar" id="sidebar">
     <h3>小工具選單</h3>
     <ul>
+      <li onclick="switchTool('xml')">📄 XML 排版工具</li>
       <li onclick="switchTool('calculator')">⏱ 分鐘計算</li>
       <li onclick="switchTool('zhconvert')">🖋 簡⇄繁轉換</li>
-      <li onclick="switchTool('barcodegen')">📦 條碼產生器</li>
+      <li onclick="switchTool('barcode')">📦 條碼產生器</li>
     </ul>
   </div>
 
   <div class="main">
-    <div class="home-card" id="home">
-      <img id="homeImage" src="homepage2.jpg" alt="首頁圖片">
+    <div id="home" class="card">
+      <img id="homeImage" src="./assets/homepage2.jpg" alt="首頁圖片" class="home-image" />
     </div>
 
-    <div class="card" id="calculator" style="display:none">
-      <button class="close-btn" onclick="backHome()">×</button>
-      <h2>日期時間 ➜ 分鐘數</h2>
-      <label for="startDateTime">開始時間</label>
-      <input type="datetime-local" id="startDateTime" />
-      <label for="endDateTime">結束時間</label>
-      <input type="datetime-local" id="endDateTime" />
+    <div id="xml" class="card" style="display:none">
+      <button class="close-btn" onclick="switchTool('home')">×</button>
+      <h2>XML 排版工具</h2>
+      <textarea id="xmlInput" rows="8" placeholder="貼上 XML 內容..."></textarea>
+      <button onclick="formatXML()">格式化</button>
+      <div id="xmlResult"></div>
+    </div>
+
+    <div id="calculator" class="card" style="display:none">
+      <button class="close-btn" onclick="switchTool('home')">×</button>
+      <h2>分鐘計算</h2>
+      <input type="datetime-local" id="startTime" placeholder="開始時間" />
+      <input type="datetime-local" id="endTime" placeholder="結束時間" />
       <button onclick="calculateMinutes()">計算分鐘數</button>
       <div id="result"></div>
     </div>
 
-    <div class="card" id="zhconvert" style="display:none">
-      <button class="close-btn" onclick="backHome()">×</button>
-      <h2>簡體 ⇄ 繁體 轉換</h2>
-      <textarea id="zhInput" rows="5" placeholder="輸入文字..."></textarea>
-      <button onclick="convertText('tify')">轉為繁體</button>
-      <button onclick="convertText('sify')" style="margin-top: 8px;">轉為簡體</button>
+    <div id="zhconvert" class="card" style="display:none">
+      <button class="close-btn" onclick="switchTool('home')">×</button>
+      <h2>簡繁轉換</h2>
+      <textarea id="zhInput" rows="6" placeholder="請輸入簡體或繁體文字..."></textarea>
+      <button onclick="convertText('s2t')">簡轉繁</button>
+      <button onclick="convertText('t2s')">繁轉簡</button>
       <div id="zhResult"></div>
-      <div id="errorMsg" class="error"></div>
     </div>
 
-    <div class="card" id="barcodegen" style="display:none">
-      <button class="close-btn" onclick="backHome()">×</button>
-      <h2>條碼生成器 <span style="font-weight: 600">(Code128)</span></h2>
-      <input type="text" id="barcodeInput" placeholder="請輸入條碼文字..." />
+    <div id="barcode" class="card" style="display:none">
+      <button class="close-btn" onclick="switchTool('home')">×</button>
+      <h2>條碼產生器</h2>
+      <input id="barcodeInput" placeholder="輸入條碼內容" />
+      <svg id="barcode"></svg>
       <button onclick="generateBarcode()">產生條碼</button>
-      <div id="barcodeContainer">
-        <svg id="barcode"></svg>
-      </div>
     </div>
   </div>
 
   <script>
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar')?.classList.toggle('open');
     }
 
-    function switchTool(tool) {
-      ['home', 'calculator', 'zhconvert', 'barcodegen'].forEach(id => {
-        document.getElementById(id).style.display = id === tool ? 'block' : 'none';
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark-mode');
+      const homeImage = document.getElementById('homeImage');
+      const isDark = document.documentElement.classList.contains('dark-mode');
+      homeImage.src = isDark ? './assets/homepage3.jpg' : './assets/homepage2.jpg';
+    }
+
+    function switchTool(toolId) {
+      const ids = ['home', 'xml', 'calculator', 'zhconvert', 'barcode'];
+      ids.forEach(id => {
+        document.getElementById(id).style.display = id === toolId ? 'block' : 'none';
       });
       const names = {
-        home: '首頁',
+        home: '小工具集合',
+        xml: 'XML 排版工具',
         calculator: '分鐘計算',
         zhconvert: '簡繁轉換',
-        barcodegen: '條碼產生器'
+        barcode: '條碼產生器'
       };
-      document.getElementById('currentToolName').innerText = names[tool] || '';
+      document.getElementById('currentToolName').innerText = names[toolId] || '';
       document.getElementById('sidebar').classList.remove('open');
     }
 
-    function backHome() {
-      switchTool('home');
+    function formatXML() {
+      const input = document.getElementById('xmlInput').value;
+      try {
+        const formatted = new window.DOMParser().parseFromString(input, 'application/xml');
+        const serializer = new XMLSerializer();
+        const xmlStr = serializer.serializeToString(formatted);
+        document.getElementById('xmlResult').innerText = xmlStr;
+      } catch (e) {
+        document.getElementById('xmlResult').innerText = 'XML 格式錯誤';
+      }
     }
 
     function calculateMinutes() {
-      const start = document.getElementById("startDateTime").value;
-      const end = document.getElementById("endDateTime").value;
-      if (!start || !end) {
-        document.getElementById("result").innerText = "請輸入完整時間";
-        return;
-      }
-      const diffMinutes = Math.floor((new Date(end) - new Date(start)) / 60000);
-      document.getElementById("result").innerText =
-        diffMinutes < 0 ? "結束時間不能早於開始時間" : `總共 ${diffMinutes} 分鐘`;
+      const start = new Date(document.getElementById('startTime').value);
+      const end = new Date(document.getElementById('endTime').value);
+      if (!start || !end || isNaN(start) || isNaN(end)) return alert('請輸入完整時間');
+      let diff = Math.floor((end - start) / 60000);
+      if (diff < 0) diff += 1440;
+      document.getElementById('result').innerText = `總共 ${diff} 分鐘`;
     }
 
-    function applyCustomDict(text) {
-      const dict = [
-        ['供应商', '供應商'], ['系统', '系統'], ['文件', '檔案'],
-        ['谢谢', '謝謝'], ['电脑', '電腦'], ['顯示', '顯示'],
-        ['請', '請'], ['幫忙', '幫忙'], ['處理', '處理'],
-        ['廣州', '廣州'], ['塑膠', '塑膠'], ['異常', '異常'],
-        ['權限', '權限'], ['MES', 'MES'], ['IQC', 'IQC']
-      ];
-      return dict.reduce((acc, [s, t]) => acc.replaceAll(s, t), text);
-    }
-
-    async function convertText(type) {
-      const input = document.getElementById("zhInput").value.trim();
-      const resultDiv = document.getElementById("zhResult");
-      const errorDiv = document.getElementById("errorMsg");
-      resultDiv.innerText = '';
-      errorDiv.innerText = '';
-
-      if (!input) {
-        errorDiv.innerText = '請先輸入文字再進行轉換。';
-        return;
-      }
-
-      try {
-        const converter = OpenCC.Converter({ from: type === 'tify' ? 'cn' : 'tw', to: type === 'tify' ? 'tw' : 'cn' });
-        const result = await converter(input);
-        resultDiv.innerText = type === 'tify' ? applyCustomDict(result) : result;
-      } catch (err) {
-        console.error('OpenCC 錯誤：', err);
-        errorDiv.innerText = '轉換失敗，請稍後再試。';
-      }
+    function convertText(type) {
+      const input = document.getElementById('zhInput').value;
+      const converter = OpenCC.Converter({ from: type });
+      const result = converter(input);
+      document.getElementById('zhResult').innerText = result;
     }
 
     function generateBarcode() {
-      const input = document.getElementById("barcodeInput").value.trim();
-      if (!input) return alert("請輸入條碼內容");
-      JsBarcode("#barcode", input, {
-        format: "CODE128",
-        lineColor: "#000",
-        width: 1.5,
-        height: 100,
-        displayValue: true,
-        fontSize: 16,
-        margin: 0
-      });
+      const value = document.getElementById('barcodeInput').value;
+      if (!value) return alert('請輸入內容');
+      JsBarcode('#barcode', value, { format: 'CODE128', displayValue: true });
     }
 
-    window.onload = () => switchTool('home');
+    window.onload = () => {
+      switchTool('home');
+    };
   </script>
 </body>
 </html>
